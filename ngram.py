@@ -40,6 +40,7 @@ def unigrams(text_file):
 
 def unigram_unsmooth(test_file):
 ####  Unigram smoothing
+    probs=[]
     file2 = open(test_file,"r")
     str2 = file2.readlines()
     list_sentence2=[]
@@ -57,8 +58,9 @@ def unigram_unsmooth(test_file):
         for i in words:
             val=dict_unigram[i]
             uni_prob = uni_prob+math.log2(val/total_vocab)
+        probs.append(uni_prob)
         #print("\n unigram unsmoothed probability of",li,"is",uni_prob)
-
+    return probs
 
 def bigrams(text_file):
     file1 = open(text_file,"r")
@@ -90,6 +92,7 @@ def bigrams(text_file):
     return dict_bigrams
 
 def bigram_unsmooth(test_file):
+    probs=[]
     file3 = open(test_file,"r")
     str3 = file3.readlines()
     list_sentence3=[]
@@ -115,26 +118,28 @@ def bigram_unsmooth(test_file):
 
     for l in list_sentence3:
         bi_prob=0
-        print("S=",l)
+        #print("S=",l)
         w = l.split()
-        print(w)
+        #print(w)
         for i in range(0,len(w)-1):
 #            print("kiran")
             #print(i,"--",i+1)
             numer = dict_bigrams[(w[i],w[i+1])]
-            print("numerator",numer)
+            #print("numerator",numer)
             #print("words:",w[i],w[i+1])
             denom = dict_unigram[w[i]]
-            print("denom:",denom)
+            #print("denom:",denom)
             if(numer == 0):
                 bi_prob="undefined"
                 break
             else:
                 bi_prob = bi_prob+ math.log(numer/denom,2)
-        print("bigram unsmooth:",bi_prob)
-
+        probs.append(bi_prob)
+        #print("bigram unsmooth:",bi_prob)
+    return probs
 
 def bigram_smooth(test_file):
+    probs=[]
     file3 = open(test_file,"r")
     str3 = file3.readlines()
     list_sentence3=[]
@@ -160,9 +165,9 @@ def bigram_smooth(test_file):
     #total_vocab = total_vocab - len(list_sentence3)
     for l in list_sentence3:
         bi_prob=0
-        print("S=",l)
+        #print("S=",l)
         w = l.split()
-        print(w)
+        #print(w)
         for i in range(0,len(w)-1):
             numer = dict_bigrams[(w[i],w[i+1])]
             if(w[i] not in dict_unigram):
@@ -171,13 +176,29 @@ def bigram_smooth(test_file):
                 bi_prob = bi_prob+math.log2(1/(dict_unigram[w[i]]+total_vocab))
             else:
                 bi_prob = bi_prob+ math.log2((numer+1)/(dict_unigram[w[i]]+total_vocab))
-        print("bigram smooth:",bi_prob)
+        probs.append(bi_prob)
+        #print("bigram smooth:",bi_prob)
+    return probs
 
 
+def main():
+    file_main = open(sys.argv[3],"r").read()
+    sent = file_main.split("\n")
+    sen_len = len(sent)
+    uni_probs_un=unigram_unsmooth(sys.argv[3])
+    bi_probs_un=bigram_unsmooth(sys.argv[3])
+    bi_probs_sm=bigram_smooth(sys.argv[3])
+    for i in range(0,(sen_len)):
+        print("S =", sent[i])
+        print("\n")
+        print("Unsmoothed Unigrams, logprob(S){:+.4f}".format(round(uni_probs_un[i],4)))
 
+        if(bi_probs_un[i]=='undefined'):
+            print("Unsmoothed Bigrams, logprob(S)",bi_probs_un[i])
+        else:
+            print("Unsmoothed Bigrams, logprob(S){:+.4f}".format(bi_probs_un[i]))
 
+        print("Smoothed Bigrams, logprob(S){:+.4f}".format(bi_probs_sm[i]))
+        print("\n")
 
-
-unigram_unsmooth(sys.argv[3])
-bigram_unsmooth(sys.argv[3])
-bigram_smooth(sys.argv[3])
+main()
