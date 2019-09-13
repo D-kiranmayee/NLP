@@ -134,10 +134,50 @@ def bigram_unsmooth(test_file):
         print("bigram unsmooth:",bi_prob)
 
 
-def bigram_smooth():
-    
+def bigram_smooth(test_file):
+    file3 = open(test_file,"r")
+    str3 = file3.readlines()
+    list_sentence3=[]
+ ####### sending each sen into list
+    for i in str3:
+        list_sentence3.append(i)
+###### changing into lower
+    dict_unigram = unigrams(sys.argv[1])
+    total_vocab=len(dict_unigram)
+
+    file_data = open(sys.argv[1],"r").read().split("\n")
+    hash_len = len(file_data)
+
+
+
+    dict_unigram["#"]=hash_len
+
+    dict_bigrams = bigrams(sys.argv[1])
+    #print(dict_bigrams)
+    list_sentence3=[x.lower().strip().replace("\n","") for x in list_sentence3]
+    list_sentence3 = ["# "+li for li in list_sentence3]
+
+    #total_vocab = total_vocab - len(list_sentence3)
+    for l in list_sentence3:
+        bi_prob=0
+        print("S=",l)
+        w = l.split()
+        print(w)
+        for i in range(0,len(w)-1):
+            numer = dict_bigrams[(w[i],w[i+1])]
+            if(w[i] not in dict_unigram):
+                bi_prob =bi_prob+math.log2(1/total_vocab)
+            elif(w[i+1] not in dict_unigram):
+                bi_prob = bi_prob+math.log2(1/(dict_unigram[w[i]]+total_vocab))
+            else:
+                bi_prob = bi_prob+ math.log2((numer+1)/(dict_unigram[w[i]]+total_vocab))
+        print("bigram smooth:",bi_prob)
+
+
+
 
 
 
 unigram_unsmooth(sys.argv[3])
 bigram_unsmooth(sys.argv[3])
+bigram_smooth(sys.argv[3])
